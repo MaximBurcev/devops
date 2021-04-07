@@ -1,11 +1,11 @@
 version: '3.3'
 services:
     assembly:
-        build: .
+        build: ./assembly
         volumes:
             - webapps:/usr/local/tomcat/webapps/
     prod:
-        image: tomcat
+        build: ./prod
         volumes:
             - webapps:/usr/local/tomcat/webapps/
         ports:
