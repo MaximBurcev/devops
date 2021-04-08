@@ -2,6 +2,7 @@ version: '3.3'
 services:
     assembly:
         build: ./assembly
+        tty: true
         volumes:
             - webapps:/usr/local/tomcat/webapps/
     prod:
