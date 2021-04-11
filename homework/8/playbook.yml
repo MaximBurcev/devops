@@ -1,0 +1,35 @@
+---
+- name: build
+  hosts: build
+  become: yes
+
+  tasks:
+    - name: Ensure maven package is present
+      apt:
+          name: maven
+          state: present
+
+    - name: Clone a repo
+      ansible.builtin.git:
+          repo: https://github.com/jleetutorial/maven-project
+          dest: /tmp/maven-project
+
+#    - name: build from pom.xml
+#      ansible.builtin.command:
+#        cmd: mvn package
+#        chdir: /tmp/maven-project
+
+
+- name: production
+  hosts: production
+  become: yes
+
+  tasks:
+    - name: Ensure tomcat package is present
+      apt:
+          name: tomcat8
+          state: present
+
+    - name: copy build files
+      synchronize: src=/tmp/maven-project/webapp/target/webapp.war dest=/var/lib/tomcat8/webapps
+      delegate_to: build
