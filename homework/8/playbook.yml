@@ -10,14 +10,14 @@
           state: present
 
     - name: Clone a repo
-      ansible.builtin.git:
+      git:
           repo: https://github.com/jleetutorial/maven-project
           dest: /tmp/maven-project
 
-#    - name: build from pom.xml
-#      ansible.builtin.command:
-#        cmd: mvn package
-#        chdir: /tmp/maven-project
+    - name: maven build
+      shell: mvn clean package
+      args:
+          chdir: /tmp/maven-project/webapp
 
 
 - name: production
