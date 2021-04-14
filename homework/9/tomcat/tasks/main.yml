@@ -1,6 +1,6 @@
 ---
 # tasks file for tomcat
 - name: Ensure tomcat package is present
-      apt:
-          name: tomcat8
-          state: present
+  apt:
+    name: tomcat8
+    state: present

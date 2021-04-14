@@ -1,6 +1,6 @@
 ---
 # tasks file for clone
 - name: Clone a repo
-      git:
-          repo: https://github.com/jleetutorial/maven-project
-          dest: /tmp/maven-project
+  git:
+    repo: https://github.com/jleetutorial/maven-project
+    dest: /tmp/maven-project

@@ -1,7 +1,7 @@
 ---
 # tasks file for copy
 - name: copy build files
-      synchronize: src=/tmp/maven-project/webapp/target/webapp.war dest=/var/lib/tomcat8/webapps
-      delegate_to: build
+  synchronize: src=/tmp/maven-project/webapp/target/webapp.war dest=/var/lib/tomcat8/webapps
+  delegate_to: build
 
 
