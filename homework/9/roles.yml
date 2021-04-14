@@ -1,0 +1,17 @@
+---
+- name: build artifact
+  hosts: build
+  become: yes
+
+  roles:
+          - maven
+          - clone
+          - build
+
+- name: deploy artifact
+  hosts: production
+  become: yes
+
+  roles:
+          - tomcat
+          - copy

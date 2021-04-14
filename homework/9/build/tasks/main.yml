@@ -1,0 +1,6 @@
+---
+# tasks file for build
+- name: maven build
+      shell: mvn clean package
+      args:
+          chdir: /tmp/maven-project/webapp

@@ -1,0 +1,6 @@
+---
+# tasks file for maven
+- name: Ensure maven package is present
+  apt:
+    name: maven
+    state: present
