@@ -1,0 +1,45 @@
+pipeline {
+  agent {
+    docker {
+      image 'maxburcev/build_agent:latest'
+    }
+  }
+
+  stages {
+
+    stage('Copy source with configs') {
+      steps {
+        git(url: 'https://github.com/MaximBurcev/boxfuse-sample-java-war-hello.git', branch: 'master', poll: true, credentialsId: 'git')
+        //sh 'ssh-keyscan -H devbuild-srv01 >> ~/.ssh/known_hosts'
+        //sh 'scp jenkins@devbuild-srv01:/home/jenkins/build/configs/staging/gateway-api/application-business-config-defaults.yml gateway-api/src/main/resources/application-business-config-defaults.yml'
+      }
+    }
+
+    stage('Build war') {
+      steps {
+        sh 'mvn clean package'
+      }
+    }
+
+    stage('Make docker image') {
+      steps {
+        sh 'rm -rf docker-setup && mkdir docker-setup && cp -R target/hello-1.0.war docker-setup && cp Dockerfile docker-setup'
+        sh 'ls -la docker-setup'
+        sh 'docker --version'
+        sh 'docker build -t boxfuxe docker-setup'
+        //sh '''docker tag gateway-api devcvs-srv01:5000/shop2-backend/gateway-api:2-staging && docker push devcvs-srv01:5000/shop2-backend/gateway-api:2-staging'''
+      }
+    }
+
+    stage('Run docker on devbe-srv01') {
+      steps {
+        sh 'ssh-keyscan -H devbe-srv01 >> ~/.ssh/known_hosts'
+        sh '''ssh jenkins@devbe-srv01 << EOF
+	sudo docker pull devcvs-srv01:5000/shop2-backend/gateway-api:2-staging
+	cd /etc/shop/docker
+	sudo docker-compose up -d
+EOF'''
+      }
+    }
+  }
+}

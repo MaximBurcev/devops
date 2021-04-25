@@ -1,0 +1,2 @@
+htop
+sudo su

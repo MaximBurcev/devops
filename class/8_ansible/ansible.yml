@@ -1,0 +1,17 @@
+ - name: add serveral users
+   user:
+           name: "{{ item }}"
+           groups: "wheel"
+           state: present
+
+  with_items:
+          - user 1
+          - user 2
+          - user 3
+
+- name: install many packages
+  apt: name={{item}} state=installed
+  with_items:
+          - nginx
+          - mc
+          - python

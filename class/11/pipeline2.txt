@@ -1,0 +1,29 @@
+pipeline {
+	agent any
+	
+	tools {
+		maven "m3"
+	}
+	
+	stages {
+	
+		stage ('git') {
+			steps {
+				git 'https://github.com/MaximBurcev/boxfuse-sample-java-war-hello.git'
+			}
+		}
+		
+		stage ('build') {
+			steps {
+				sh 'mvn package'
+			}
+		}
+		
+		stage ('deploy') {
+			steps {
+				deploy adapters: [tomcat9(credentialsId: 'e597595c-85b1-46df-9a4f-e122e1f793c5', path: '', url: 'http://34.107.113.228:8080/')], contextPath: 'boxfuse', war: '**/*.war'
+			}
+		}
+	
+	}
+}
