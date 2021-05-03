@@ -1,0 +1,17 @@
+version: '3.3'
+services:
+    assembly:
+        build: ./assembly
+        tty: true
+        volumes:
+            - webapps:/usr/local/tomcat/webapps/
+    prod:
+        build: ./prod
+        volumes:
+            - webapps:/usr/local/tomcat/webapps/
+        ports:
+            - 8080:8080
+        depends_on:
+            - assembly
+volumes:
+    webapps:

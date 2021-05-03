@@ -1,44 +1,47 @@
 pipeline {
+
   agent {
+
     docker {
-      image 'maxburcev/build_agent:latest'
+      image 'mas0lik/docker-jenkins-agent'
+      //Use arguments to map sockets and user Root
+      args  '-v /var/run/docker.sock:/var/run/docker.sock -u 0:0'
+      //Use to automate authentication at Docker Hub
+      registryCredentialsId '942976e5-e679-4d45-aaf8-f34ea6cf3e0a'
     }
   }
 
   stages {
 
-    stage('Copy source with configs') {
-      steps {
-        git(url: 'https://github.com/MaximBurcev/boxfuse-sample-java-war-hello.git', branch: 'master', poll: true, credentialsId: 'git')
-        //sh 'ssh-keyscan -H devbuild-srv01 >> ~/.ssh/known_hosts'
-        //sh 'scp jenkins@devbuild-srv01:/home/jenkins/build/configs/staging/gateway-api/application-business-config-defaults.yml gateway-api/src/main/resources/application-business-config-defaults.yml'
+    stage('Clone webapp src from git') {
+      steps{
+        //Use 'git: Git' to clone webapp source form git repository wih associated Dockerfile
+        git 'https://github.com/mas0lik/boxfuse-test1'
       }
     }
 
-    stage('Build war') {
+    stage('Build war file') {
       steps {
-        sh 'mvn clean package'
+        sh 'mvn package'
       }
     }
 
-    stage('Make docker image') {
+    stage('Build and push docker image') {
       steps {
-        sh 'rm -rf docker-setup && mkdir docker-setup && cp -R target/hello-1.0.war docker-setup && cp Dockerfile docker-setup'
-        sh 'ls -la docker-setup'
-        sh 'docker --version'
-        sh 'docker build -t boxfuxe docker-setup'
-        //sh '''docker tag gateway-api devcvs-srv01:5000/shop2-backend/gateway-api:2-staging && docker push devcvs-srv01:5000/shop2-backend/gateway-api:2-staging'''
+        sh 'docker build -f Dockerfile -t mas0lik/prod-webapp:prod .'
+        sh 'docker push mas0lik/prod-webapp:prod'
       }
     }
 
-    stage('Run docker on devbe-srv01') {
+    stage('Pull docker image and run container on production environment') {
       steps {
-        sh 'ssh-keyscan -H devbe-srv01 >> ~/.ssh/known_hosts'
-        sh '''ssh jenkins@devbe-srv01 << EOF
-	sudo docker pull devcvs-srv01:5000/shop2-backend/gateway-api:2-staging
-	cd /etc/shop/docker
-	sudo docker-compose up -d
+        //Using SSH Agent plugin with private key
+        sshagent(['c599679c-0d65-4c66-8d0a-49d266b6dfaa']) {
+          sh '''ssh -o StrictHostKeyChecking=no root@34.121.239.27 << EOF
+          docker pull mas0lik/prod-webapp:prod
+          docker run --rm --name prod-webapp-deployed -d -p 8888:8080 mas0lik/prod-webapp:prod
 EOF'''
+        }
       }
     }
   }

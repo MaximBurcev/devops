@@ -1,19 +1,4 @@
-FROM debian
-# Install pacakges
-RUN apt-get update
-# Install ssh
-RUN apt-get -y install openssh-client
-# Confugure ssh client
-#COPY id_rsa /root/.ssh/id_rsa
-#RUN chmod 600 /root/.ssh/id_rsa
-# Install maven and tomcat
-RUN DEBIAN_FRONTEND="noninteractive" apt-get -y install maven
-# Install docker 18.03
-RUN apt-get -y install apt-transport-https ca-certificates curl gnupg2 software-properties-common
-RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
-RUN add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
-RUN apt-get update
-RUN apt-get -y install docker-ce=18.03.1~ce-0~debian
-# Clear cache
-RUN apt-get clean
-CMD service docker start
+#This is Docker file for Production Environment Image for hosting webapps
+#Using base image Tomcat9 with AdoptOpenJDK11
+FROM tomcat:9.0.43-jdk11-adoptopenjdk-openj9
+COPY target/hello-1.0.war /usr/local/tomcat/webapps
