@@ -8,7 +8,7 @@
     # Necessary Variables for creating/provisioning the EC2 Instance
   vars:
       instance_type: t2.nano
-      security_group: MySecurityGroup
+      security_group: MySecurityGroup3
       image: ami-09e67e426f25ce0d7
       region: us-east-1
       keypair: MyKeyPair2
@@ -17,26 +17,26 @@
     # Task that will be used to Launch/Create an EC2 Instance
   tasks:
 
-#      - name: Create a security group
-#        local_action:ami-09e67e426f25ce0d7
-#            module: ec2_group
-#            name: "{{ security_group }}"
-#            description: Security Group for webserver Servers
-#            region: "{{ region }}"
-#            rules:
-#                - proto: tcp
-#                  type: ssh
-#                  from_port: 22
-#                  to_port: 22
-#                  cidr_ip: 0.0.0.0/0
-#                - proto: tcp
-#                  from_port: 80
-#                  to_port: 80
-#                  cidr_ip: 0.0.0.0/0
-#            rules_egress:
-#                - proto: all
-#                  type: all
-#                  cidr_ip: 0.0.0.0/0
+      - name: Create a security group
+        local_action: ami-09e67e426f25ce0d7
+            module: ec2_group
+            name: "{{ security_group }}"
+            description: Security Group for webserver Servers
+            region: "{{ region }}"
+            rules:
+                - proto: tcp
+                  type: ssh
+                  from_port: 22
+                  to_port: 22
+                  cidr_ip: 0.0.0.0/0
+                - proto: tcp
+                  from_port: 80
+                  to_port: 80
+                  cidr_ip: 0.0.0.0/0
+            rules_egress:
+                - proto: all
+                  type: all
+                  cidr_ip: 0.0.0.0/0
 
 
       - name: Launch the new EC2 Instance
