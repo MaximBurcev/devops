@@ -11,7 +11,7 @@
       security_group: MySecurityGroup3
       image: ami-09e67e426f25ce0d7
       region: us-east-1
-      keypair: MyKeyPair2
+      keypair: MyKeyPair3
       count: 1
 
     # Task that will be used to Launch/Create an EC2 Instance
