@@ -1,0 +1,13 @@
+---
+-   hosts:
+    amazon:
+        aws:
+            ec2:
+                key_name: MyKeyPair2
+                instance_type: t2.micro
+                image: ami-0ff338189efb7ed37
+                wait: yes
+                group: webserver
+                count: 1
+                vpc_subnet_id: subnet-0ff338189efb7ed37
+                assign_public_ip: yes
