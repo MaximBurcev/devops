@@ -37,7 +37,7 @@
                 - proto: tcp
                   ports:
                       - 22
-                  cidr_ip: 84.201.161.39/32
+                  cidr_ip: 0.0.0.0/0
                   rule_desc: allow ssh
       - name: create aws instance
         ec2:
