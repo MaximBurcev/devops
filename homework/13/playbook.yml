@@ -1,7 +1,7 @@
 ---
 - name: create aws instance
   hosts: localhost
-  user: MaximBurcev
+  user: root
 
   vars:
       instance_type: t2.nano
