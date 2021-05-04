@@ -18,7 +18,7 @@
   tasks:
 
       - name: Create a security group
-        local_action: ami-09e67e426f25ce0d7
+        local_action:
             module: ec2_group
             name: "{{ security_group }}"
             description: Security Group for webserver Servers
