@@ -8,7 +8,7 @@
 
   vars:
       instance_type: t2.nano
-      security_group: MySecurityGroup3
+      security_group: nginx-sg
       image: ami-09e67e426f25ce0d7
       region: us-east-1
       keypair: MyKeyPair3
@@ -25,9 +25,8 @@
         when: ec2_key_result.changed
       - name: create security group
         ec2_group:
-            name: nginx-sg
+            name: {{ security_group }}
             description: sg with rule descriptions
-            vpc_id: vpc-7a2ccf07
             region: us-east-1
             rules:
                 - proto: tcp
