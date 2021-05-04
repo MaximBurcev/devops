@@ -44,11 +44,10 @@
             key_name: amazon
             region: us-east-1
             group: nginx-sg
-            instance_type: t2.micro
-            image: ami-0ac80df6eff0e70b5
+            instance_type: "{{ instance_type }}"
+            image:  "{{ image }}"
             wait: yes
             count: 1
-            vpc_subnet_id: subnet-e96ebeb6
             assign_public_ip: yes
         register: output
       - name: print
