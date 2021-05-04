@@ -48,7 +48,6 @@
             image:  "{{ image }}"
             wait: yes
             count: 1
-            assign_public_ip: yes
         register: output
       - name: print
         debug:
