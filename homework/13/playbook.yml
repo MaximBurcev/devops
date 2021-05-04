@@ -1,13 +1,80 @@
 ---
--   hosts:
-    amazon:
-        aws:
-            ec2:
-                key_name: MyKeyPair2
-                instance_type: t2.micro
-                image: ami-0ff338189efb7ed37
-                wait: yes
-                group: webserver
-                count: 1
-                vpc_subnet_id: subnet-0ff338189efb7ed37
-                assign_public_ip: yes
+- name: create aws instance
+  hosts: localhost
+  user: MaximBurcev
+
+  vars:
+      instance_type: t2.nano
+      security_group: MySecurityGroup3
+      image: ami-09e67e426f25ce0d7
+      region: us-east-1
+      keypair: MyKeyPair3
+      count: 1
+
+  tasks:
+      - name: create key pair
+        ec2_key:
+            name: amazon
+            region: us-east-1
+        register: ec2_key_result
+      - name: Save private key
+        copy: content="{{ ec2_key_result.key.private_key }}" dest=".ssh/id_rsa" mode=0600
+        when: ec2_key_result.changed
+      - name: create security group
+        ec2_group:
+            name: nginx-sg
+            description: sg with rule descriptions
+            vpc_id: vpc-7a2ccf07
+            region: us-east-1
+            rules:
+                - proto: tcp
+                  ports:
+                      - 80
+                  cidr_ip: 0.0.0.0/0
+                  rule_desc: allow all on port 80
+                - proto: tcp
+                  ports:
+                      - 22
+                  cidr_ip: 84.201.161.39/32
+                  rule_desc: allow ssh
+      - name: create aws instance
+        ec2:
+            key_name: amazon
+            region: us-east-1
+            group: nginx-sg
+            instance_type: t2.micro
+            image: ami-0ac80df6eff0e70b5
+            wait: yes
+            count: 1
+            vpc_subnet_id: subnet-e96ebeb6
+            assign_public_ip: yes
+        register: output
+      - name: print
+        debug:
+            var: output.instances[0].public_ip
+      - name: update inventory
+        add_host:
+            name: "{{ output.instances[0].public_ip }}"
+            groups: amazon
+- name: deploy nginx
+  hosts: amazon
+  remote_user: ubuntu
+  become: yes
+  become_user: root
+  tasks:
+      - name: ensure nginx is installed
+        apt:
+            name: nginx
+            state: present
+            update_cache: yes
+      - name: modify hello page
+        copy:
+            src: index.html
+            dest: /var/www/html/index.html
+        notify:
+            - restart nginx
+  handlers:
+      - name: restart nginx
+        service:
+            name: nginx
+            state: restarted
