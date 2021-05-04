@@ -2,6 +2,9 @@
 - name: create aws instance
   hosts: local
   user: root
+  connection: local
+  become: False
+  gather_facts: False
 
   vars:
       instance_type: t2.nano
