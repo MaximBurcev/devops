@@ -1,6 +1,6 @@
 ---
 - name: create aws instance
-  hosts: localhost
+  hosts: local
   user: root
 
   vars:
