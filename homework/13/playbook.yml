@@ -25,7 +25,7 @@
         when: ec2_key_result.changed
       - name: create security group
         ec2_group:
-            name: {{ security_group }}
+            name: "{{ security_group }}"
             description: sg with rule descriptions
             region: us-east-1
             rules:
