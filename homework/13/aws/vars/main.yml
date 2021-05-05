@@ -1,0 +1,7 @@
+---
+key_name: mas0lik04
+region_name: us-east-2
+s3_bucket_name: boxfuse.mas0lik.dz
+instance_name: aws-inst-dz13
+ami_id: ami-08962a4068733a2b6
+instance_type: t2.micro

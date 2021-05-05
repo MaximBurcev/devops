@@ -1,0 +1,162 @@
+---
+- name: Provision EC2 instances for Staging and Production environments
+  hosts: localhost
+  vars_files:
+    - ./vars/main.yml
+  gather_facts: False
+
+  tasks:
+    - name: Create a new EC2 key pair for Staging and Production environments
+      ec2_key:
+        name: "{{ key_name }}"
+        region: "{{ region_name }}"
+      register: ec2_key
+
+    - name: Save private key
+      copy: content="{{ ec2_key.key.private_key }}" dest="./keys/{{ key_name }}.pem" mode=0600
+      when: ec2_key.changed
+
+    - name: Create epmty S3 bucket for managing artifacts
+      s3_bucket:
+        name: "{{ s3_bucket_name }}"
+        state: present
+
+    - name: Obtain default VPC information from AWS
+      ec2_vpc_net_facts:
+        filters:
+          "isDefault": "true"
+      register: default_vpc
+
+    - name: Obtain subnets for default VPC
+      ec2_vpc_subnet_facts:
+        filters:
+          vpc-id: "{{ default_vpc['vpcs'][0]['vpc_id'] }}"
+      register: subnet_info
+
+    - set_fact:
+        vpc_id: "{{ default_vpc['vpcs'][0]['vpc_id'] }}"
+        random_subnet: "{{ subnet_info.subnets|map(attribute='id')|list|random }}"
+
+    - name: Create EC2 VPC default security group for Staging and Production instances
+      ec2_group:
+        name: "{{ instance_name }}"
+        description: Security Group for {{ instance_name }}
+        vpc_id: "{{ vpc_id }}"
+        region: "{{ region_name }}"
+        rules:
+          - proto: tcp
+            ports:
+              - 22
+              - 8080
+            cidr_ip: 0.0.0.0/0
+            rule_desc: "Allow SSH for instances and HTTP connections for Tomcat9"
+      register: security_group
+
+    - name: Create two EC2 instances
+      ec2:
+        key_name: "{{ key_name }}"
+        region: "{{ region_name }}"
+        instance_type: "{{ instance_type }}"
+        image: "{{ ami_id }}"
+        vpc_subnet_id: "{{ random_subnet }}"
+        group: "{{ instance_name }}"
+        wait: yes
+        instance_tags:
+          Name: "{{ item }}"
+        count_tag:
+          Name: "{{ item }}"
+        exact_count: 1
+        assign_public_ip: yes
+      with_items: ['staging', 'production']
+      register: ec2
+
+    - debug:
+        var: ec2.results
+
+    - name: Add new instance Staging to host group
+      add_host:
+        name: "{{ item.public_ip }}"
+        groups: "{{ item.tags.Name }}"
+        ansible_ssh_private_key_file: ./keys/{{ key_name }}.pem
+      with_items: "{{ ec2.results[0].instances }}"
+
+    - name: Add new instance Production to host group
+      add_host:
+        name: "{{ item.public_ip }}"
+        groups: "{{ item.tags.Name }}"
+        ansible_ssh_private_key_file: ./keys/{{ key_name }}.pem
+      with_items: "{{ ec2.results[1].instances }}"
+
+- name: Prepare Staging environment
+  hosts: staging
+  remote_user: ubuntu
+  become: yes
+
+  tasks:
+    - name: Ensure default JDK package is present
+      apt:
+       name: default-jdk
+       state: present
+       update_cache: yes
+
+    - name: Ensure GIT package is present
+      apt:
+       name: git
+       state: present
+
+    - name: Ensure MAVEN package is present
+      apt:
+       name: maven
+       state: present
+
+    - name: Ensure Fusebox git repository cloned to host
+      git:
+       repo: 'https://github.com/boxfuse/boxfuse-sample-java-war-hello.git'
+       dest: /home/pkhramchenkov/boxfuse
+       clone: yes
+
+    - name: Build Webapp
+      command: mvn -f /home/pkhramchenkov/boxfuse/pom.xml clean package
+
+    - name: Ensure Webapp is uploaded to S3 bucket
+      aws_s3:
+        bucket: "{{ s3_bucket_name }}"
+        object: /hello-1.0.war
+        src: /home/pkhramchenkov/boxfuse/target/hello-1.0.war
+        mode: put
+        overwrite: yes
+
+- name: Prepare Production environment
+  hosts: production
+  remote_user: ubuntu
+  become: yes
+
+  tasks:
+    - name: Ensure default JRE package is present
+      apt:
+       name: default-jre
+       state: present
+       update_cache: yes
+
+    - name: Ensure TOMCAT package is present
+      apt:
+       name: tomcat9
+       state: present
+
+    - name: Ensure TOMCAT service started
+      service:
+       name: tomcat9
+       state: started
+
+    - name: Ensure Webapp artifact is downloaded from S3 bucket
+      aws_s3:
+        bucket: "{{ s3_bucket_name }}"
+        object: /hello-1.0.war
+        dest: /vars/lib/tomcat9/webapps/hello-1.0.war
+        mode: get
+
+    - name: Ensure Webapp artifact is purged from S3 bucket
+      aws_s3:
+        bucket: "{{ s3_bucket_name }}"
+        object: /hello-1.0.war
+        mode: delobj
