@@ -61,6 +61,7 @@
   remote_user: ubuntu
   become: yes
   become_user: root
+  gather_facts: False
   tasks:
       - name: ensure nginx is installed
         apt:
