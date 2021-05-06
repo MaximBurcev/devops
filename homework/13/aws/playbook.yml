@@ -121,6 +121,8 @@
       command: mvn -f /home/maximburcev/boxfuse/pom.xml clean package
 
     - name: Ensure Webapp is uploaded to S3 bucket
+      vars:
+        ansible_python_interpreter: /usr/bin/python3
       aws_s3:
         bucket: "{{ s3_bucket_name }}"
         object: /hello-1.0.war
