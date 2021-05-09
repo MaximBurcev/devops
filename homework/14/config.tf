@@ -47,7 +47,7 @@ resource "aws_security_group" "allow_app_traffic" {
 resource "aws_instance" "build_instance" {
   ami = "${var.image_id}"
   instance_type = "t2.micro"
-  key_name = "${aws_key_pair.amazon.key_name}"
+  key_name = "${aws_key_pair.myKeyPair4.key_name}"
   vpc_security_group_ids = ["${aws_security_group.allow_app_traffic.id}"]
   subnet_id = "${var.subnet_id}"
   user_data = <<EOF
