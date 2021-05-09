@@ -42,5 +42,23 @@ resource "aws_security_group" "allow_app_traffic" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+resource "aws_instance" "build_instance" {
+  ami = "${var.image_id}"
+  instance_type = "t2.micro"
+  key_name = "${aws_key_pair.amazon.key_name}"
+  vpc_security_group_ids = ["${aws_security_group.allow_app_traffic.id}"]
+  subnet_id = "${var.subnet_id}"
+  user_data = <<EOF
+#!/bin/bash
+sudo apt update && sudo apt install -y openjdk-8-jdk maven awscli
+git clone https://github.com/boxfuse/boxfuse-sample-java-war-hello.git
+cd boxfuse-sample-java-war-hello && mvn package
+export AWS_ACCESS_KEY_ID=AKIAY5Y6MRVDWOA4F7UZ
+export AWS_SECRET_ACCESS_KEY=5lPeocnSTpRkAuJnK/2K9GVTfSyVFiqiIaLTVHLC
+export AWS_DEFAULT_REGION=us-east-1
+aws s3 cp target/hello-1.0.war s3://boxfuse.maximburcev.bucket.name
+EOF
 
 }
