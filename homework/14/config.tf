@@ -3,11 +3,11 @@ provider "aws" {
 }
 
 variable "subnet_id" {
-  default = "subnet-f85acfg5"
+  default = "subnet-e55050a8"
 }
 
 variable "vpc_id" {
-  default = "vpc-6b1ddh16"
+  default = "vpc-a44bc6d9"
 }
 variable "image_id" {
   default = "ami-09e67e426f25ce0d7"
@@ -34,7 +34,7 @@ resource "aws_security_group" "allow_app_traffic" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["176.59.47.44/32"]
+    cidr_blocks = ["172.31.16.0/20"]
   }
   egress {
     from_port   = 0
