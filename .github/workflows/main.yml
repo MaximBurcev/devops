@@ -7,7 +7,5 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Install phpunit
-      uses: php-actions/phpunit@v9
-      with:
-        test_suffix: Test.php,.phpt
+    - name: Run tests
+      run: phpunit --test-suffix 'Test.php,.phpt'
